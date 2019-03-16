@@ -19,8 +19,14 @@ module Rubyplot
       attr_reader :label_stagger_height
       # Rubyplot::Artist::XAxis object.
       attr_reader :x_axis
+      # Rubyplot::Artist::XDashAxis object.
+      attr_reader :x_dash_axis
+
       # Rubyplot::Artist::YAxis object.
       attr_reader :y_axis
+# Rubyplot::Artist::YDASHAxis object.
+      attr_reader :y_dash_axis
+
       # Array of X ticks.
       attr_reader :x_ticks
       # Array of Y ticks.
@@ -80,7 +86,9 @@ module Rubyplot
         @origin = [nil, nil]
         calculate_xy_axes_origin
         @x_axis = Rubyplot::Artist::XAxis.new(self)
+        @x_dash_axis = Rubyplot::Artist::XDashAxis.new(self)
         @y_axis = Rubyplot::Artist::YAxis.new(self)
+        @y_dash_axis = Rubyplot::Artist::YDashAxis.new(self)
         @x_ticks = nil
         @y_ticks = nil
         @num_x_ticks = 5
@@ -210,7 +218,7 @@ module Rubyplot
       end
 
       def assign_x_ticks
-        @inter_x_ticks_distance = @x_axis.length / (@num_x_ticks.to_f-1)
+        @inter_x_ticks_distance = @x_axis.length / (@num_x_ticks.to_f - 1)
         unless @x_ticks
           value_distance = (@x_range[1] - @x_range[0]) / (@num_x_ticks.to_f - 1)
           @x_ticks = @num_x_ticks.times.map do |i|
@@ -279,8 +287,8 @@ module Rubyplot
       end
 
       def calculate_xy_axes_origin
-        @origin[0] = abs_x + @x_axis_margin
-        @origin[1] = abs_y + height - @y_axis_margin
+        @origin[0] = abs_x + width/2
+        @origin[1] = abs_y + height/2
       end
 
       # Figure out co-ordinates of the legends
@@ -307,6 +315,8 @@ module Rubyplot
         @texts.each(&:draw)
         @legend_box.draw
         @plots.each(&:draw)
+        @x_dash_axis.draw
+        @y_dash_axis.draw
       end
 
       def consolidate_plots
@@ -331,7 +341,7 @@ module Rubyplot
 
       def set_xrange
         if @x_range[0].nil? && @x_range[1].nil?
-          @x_range[0] = @plots.map(&:x_min).min
+          @x_range[0] = 0
           @x_range[1] = @plots.map(&:x_max).max
         end
         @x_axis.min_val = @x_range[0]
@@ -340,7 +350,7 @@ module Rubyplot
 
       def set_yrange
         if @y_range[0].nil? && @y_range[1].nil?
-          @y_range[0] = @plots.map { |p| p.y_min }.min
+          @y_range[0] = 0
           @y_range[1] = @plots.map { |p| p.y_max }.max
         end
         @y_axis.min_val = @y_range[0]
